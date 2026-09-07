@@ -118,6 +118,12 @@ locally.
 - [`backend/CLAUDE.md`](./backend/CLAUDE.md) backend conventions for agents
 - [`frontend/CLAUDE.md`](./frontend/CLAUDE.md) frontend conventions for agents
 
+## Disclaimer
+
+This repository is demo code. It is not meant to run in production or to be
+exposed to the internet. Dependencies are not audited or kept patched, so the
+app may carry security issues inherited from the libraries it uses.
+
 ## License
 
 [MIT](./LICENSE)
