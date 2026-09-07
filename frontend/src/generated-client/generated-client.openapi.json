@@ -1,0 +1,284 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Ledger API",
+    "version": "0.1.0",
+    "description": "Track ledger transactions: a transaction records that `sender` paid `amount` to `beneficiary` in a given `currency`."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "health",
+      "description": "Liveness checks."
+    },
+    {
+      "name": "transactions",
+      "description": "Ledger transactions."
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "healthCheck",
+        "summary": "Liveness check",
+        "tags": [
+          "health"
+        ],
+        "responses": {
+          "200": {
+            "description": "The service is up.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "ok"
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ]
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transactions": {
+      "get": {
+        "operationId": "listTransactions",
+        "summary": "List all transactions",
+        "tags": [
+          "transactions"
+        ],
+        "responses": {
+          "200": {
+            "description": "All transactions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createTransaction",
+        "summary": "Create a transaction",
+        "tags": [
+          "transactions"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionCreate"
+              },
+              "example": {
+                "sender": "alice",
+                "beneficiary": "bob",
+                "amount": "42.50",
+                "currency": "EUR",
+                "description": "lunch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created transaction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (e.g. non-positive amount, malformed currency).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transactions/{id}": {
+      "get": {
+        "operationId": "getTransaction",
+        "summary": "Get a single transaction by id",
+        "tags": [
+          "transactions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The transaction's UUID.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested transaction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No transaction exists with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Transaction": {
+        "type": "object",
+        "description": "A single money movement, as returned by the API.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sender": {
+            "type": "string",
+            "minLength": 1
+          },
+          "beneficiary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amount": {
+            "type": "string",
+            "description": "Positive decimal amount as a string, with up to 10 integer and 2 fractional digits.",
+            "pattern": "^(?!0+(\\.0+)?$)\\d{1,10}(\\.\\d{1,2})?$",
+            "example": "42.50"
+          },
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217 currency code.",
+            "pattern": "^[A-Z]{3}$",
+            "example": "EUR"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "sender",
+          "beneficiary",
+          "amount",
+          "currency",
+          "created_at"
+        ]
+      },
+      "TransactionCreate": {
+        "type": "object",
+        "description": "Request body to create a transaction.",
+        "properties": {
+          "sender": {
+            "type": "string",
+            "minLength": 1
+          },
+          "beneficiary": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amount": {
+            "type": "string",
+            "description": "Positive decimal amount, with up to 10 integer and 2 fractional digits.",
+            "pattern": "^(?!0+(\\.0+)?$)\\d{1,10}(\\.\\d{1,2})?$",
+            "example": "42.50"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "example": "EUR"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "sender",
+          "beneficiary",
+          "amount",
+          "currency"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error response.",
+        "properties": {
+          "status_code": {
+            "type": "integer",
+            "example": 404
+          },
+          "detail": {
+            "type": "string",
+            "example": "Not Found"
+          },
+          "extra": {
+            "description": "Optional structured details, e.g. per-field validation errors.",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "status_code",
+          "detail"
+        ]
+      }
+    }
+  }
+}

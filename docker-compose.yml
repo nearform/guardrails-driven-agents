@@ -1,0 +1,62 @@
+name: ledger
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ledger
+      POSTGRES_PASSWORD: ledger
+      POSTGRES_DB: ledger
+    ports:
+      - "5432:5432"          # published so a host-run backend can reach the DB
+    # Ephemeral storage: the data dir lives in tmpfs (RAM), so it uses no disk
+    # and is wiped when the container stops. We don't need to persist ledger data.
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ledger -d ledger"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    image: ledger-backend
+    ports:
+      - "8000:8000"
+    environment:
+      PG_HOST: db
+      PG_PORT: 5432
+      PG_DATABASE: ledger
+      PG_USER: ledger
+      PG_PASSWORD: ledger
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/.venv          # anonymous volume preserves the container-built venv
+    command: ["uv", "run", "litestar", "--app", "app.main:app", "run", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  frontend:
+    build:
+      context: ./frontend
+    image: ledger-frontend
+    ports:
+      - "3000:3000"          # dev server, reachable from the host
+    environment:
+      # Two different URLs for the same backend, because SSR (inside this
+      # container) and the browser (on the host) resolve it differently:
+      # - VITE_API_BASE_URL is inlined into the browser bundle, so it must be
+      #   host-reachable — the backend's port is also published to the host.
+      # - API_SERVER_BASE_URL is server-only (not VITE_-prefixed, so Vite
+      #   never inlines it into client code) and uses the compose network's
+      #   service name, reachable only from inside this container.
+      VITE_API_BASE_URL: http://localhost:8000
+      API_SERVER_BASE_URL: http://backend:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules    # anonymous volume preserves the container-built deps
