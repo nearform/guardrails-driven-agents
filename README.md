@@ -7,6 +7,19 @@ A small ledger application with a Python API and a React frontend. Coding
 standards are enforced by linter rules and architecture tests rather than by
 instructions alone, and CI runs the same checks as the local recipes.
 
+## Contents
+
+- [Layout](#layout)
+- [Prerequisites](#prerequisites)
+- [Quickstart](#quickstart)
+  - [Backend](#backend)
+  - [Frontend](#frontend)
+  - [Running in Docker](#running-in-docker)
+- [CI](#ci)
+- [Documentation map](#documentation-map)
+- [Disclaimer](#disclaimer)
+- [License](#license)
+
 ## Layout
 
 | Path                       | What it is                                                                                                                                  |
