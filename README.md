@@ -7,6 +7,9 @@ A small ledger application with a Python API and a React frontend. Coding
 standards are enforced by linter rules and architecture tests rather than by
 instructions alone, and CI runs the same checks as the local recipes.
 
+**Here for the guardrails?** Skip the setup and jump to
+[Trying the guardrails](#trying-the-guardrails).
+
 ## Contents
 
 - [Layout](#layout)
