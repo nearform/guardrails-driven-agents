@@ -1,5 +1,8 @@
 # Ledger App
 
+[![CI](https://github.com/nearform/guardrails-driven-agents/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/nearform/guardrails-driven-agents/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+
 A small ledger application with a Python API and a React frontend. Coding
 standards are enforced by linter rules and architecture tests rather than by
 instructions alone, and CI runs the same checks as the local recipes.
