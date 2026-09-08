@@ -42,16 +42,20 @@ async def _ensure_test_database() -> None:
         await sys_conn.close()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def setup_test_database():
-    """Once per session: ensure the test database and `transaction` table exist."""
+    """Ensure the test database and `transaction` table exist.
+
+    Session-scoped so it runs once no matter how many tests pull it in, directly
+    or transitively through `clean_transaction_table`.
+    """
     asyncio.run(_ensure_test_database())
     Transaction.create_table(if_not_exists=True).run_sync()
 
 
-@pytest.fixture(autouse=True)
-def clean_transaction_table():
-    """Give every test a clean `transaction` table.
+@pytest.fixture
+def clean_transaction_table(setup_test_database):
+    """Give the requesting test a clean `transaction` table.
 
     Uses Piccolo's `run_sync` so the fixture needs no running event loop and no
     pre-started connection pool.
@@ -62,11 +66,11 @@ def clean_transaction_table():
 
 
 @pytest.fixture
-def client():
-    """A `TestClient` bound to a fresh app (function-scoped on purpose).
+def client(clean_transaction_table):
+    """A `TestClient` bound to a fresh app, backed by a clean table.
 
-    Kept per-test so its connection pool lives and dies inside the test, avoiding
-    cross-loop conflicts with the `run_sync` cleanup that runs between tests.
+    Function-scoped so its connection pool lives and dies inside the test,
+    avoiding cross-loop conflicts with the `run_sync` cleanup between tests.
     """
     from litestar.testing import TestClient
 

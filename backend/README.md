@@ -29,8 +29,11 @@ running. `just backend-test` sets `PICCOLO_CONF=piccolo_conf_test`, and the
 suite creates `ledger_test` on first run. Postgres must be up; override the
 name with `PG_TEST_DATABASE`.
 
-The AST checks in `architecture_tests/` run without a database via
+The AST checks in `tests/test_architecture.py` run without a database via
 `just backend-architecture-test`, and as part of `just backend-quality-check`.
+They request none of `tests/conftest.py`'s database fixtures, which are opt-in
+rather than autouse for exactly this reason: a test only pays for the database
+if it asks for it.
 
 ## Structure
 
@@ -56,8 +59,9 @@ app/
     controller.py
     use_cases.py
     repository.py      # the only module that imports tables or runs queries
-architecture_tests/
-  test_architecture.py
+tests/
+  conftest.py          # `client` fixture; opt-in database setup/cleanup fixtures
+  test_architecture.py # AST checks, request no database fixture
 ```
 
 The repository is the only layer that talks to the database; its functions take
