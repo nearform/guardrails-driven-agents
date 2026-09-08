@@ -18,8 +18,8 @@ Python API for the ledger.
 - Tests run on Postgres against a separate `ledger_test` database.
   `just backend-test` sets `PICCOLO_CONF=piccolo_conf_test`, and
   `tests/conftest.py` creates the database on first run
-- The `ast` architecture tests in `architecture_tests/` need no database:
-  `just backend-architecture-test`
+- The `ast` architecture tests in `tests/test_architecture.py` need no database
+  and request none of `tests/conftest.py`'s DB fixtures: `just backend-architecture-test`
 
 ## Docker
 
@@ -37,6 +37,6 @@ Python API for the ledger.
   development keeps the DB calls inside the controller.
   - This is intentional. The repo accompanies an article on making agent
     behavior deterministic with linters and architecture tests. Code written this
-    way fails the `ast` tests in `architecture_tests/test_architecture.py`, and
+    way fails the `ast` tests in `tests/test_architecture.py`, and
     that failure is the demonstration.
 - When a test or lint fails with a reason, fix using that reason.

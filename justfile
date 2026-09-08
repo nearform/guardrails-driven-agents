@@ -30,7 +30,7 @@ backend-test:
 # Run the pure AST architecture suite (no database required).
 [working-directory: 'backend']
 backend-architecture-test:
-    uv run pytest architecture_tests
+    uv run pytest tests/test_architecture.py
 
 # Format + lint the backend with autofixes (dev).
 [working-directory: 'backend']
@@ -43,7 +43,7 @@ backend-quality:
 backend-quality-check:
     uv run ruff format --check .
     uv run ruff check .
-    uv run pytest architecture_tests
+    uv run pytest tests/test_architecture.py
 
 # Generate a new auto migration from the current table definitions.
 [working-directory: 'backend']
