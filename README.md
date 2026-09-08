@@ -18,10 +18,18 @@ instructions alone, and CI runs the same checks as the local recipes.
 
 ## Prerequisites
 
-- [`just`](https://github.com/casey/just)
+- [Docker](https://docs.docker.com/) with Compose — required, for Postgres and the containerized run
+
+To run the backend or frontend locally on the host (instead of in Docker):
+
 - [`uv`](https://docs.astral.sh/uv/) for the backend
 - [Node.js](https://nodejs.org/) 22+ and `npm` for the frontend
-- [Docker](https://docs.docker.com/) with Compose for Postgres and the containerized run
+
+To use the `just` recipes shown throughout this README (optional — you can
+always read [`justfile`](./justfile) and run the underlying commands
+directly):
+
+- [`just`](https://github.com/casey/just)
 
 ## Quickstart
 
