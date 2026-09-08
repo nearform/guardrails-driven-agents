@@ -114,6 +114,84 @@ frontend on `:3000` in dev mode, with the source bind-mounted and autoreload on.
 - The backend image's `CMD` is the production run without autoreload. Run it
   locally with `just backend-prod`.
 
+## Trying the guardrails
+
+Lint rules and architecture tests act as deterministic guardrails for coding
+agents, and they can express moderately complex rules and coding standards:
+import boundaries, function signatures, where a decorator may appear, what may
+be done with a value. To see them at work, open the repo in a coding agent that
+reads `CLAUDE.md`, give it one of the tasks below and ask it to run the check
+itself:
+
+1. Ask for a change.
+2. The agent edits, following whatever `CLAUDE.md` tells it.
+3. It runs `just backend-architecture-test` or `just frontend-lint`.
+4. The failure message names the rule, the offending lines and the fix.
+5. The agent applies the fix and the check passes.
+
+### Python: architecture testing with `ast`
+
+[`backend/CLAUDE.md`](./backend/CLAUDE.md) deliberately tells the agent to query
+the database straight from the controller and to skip the use-case and
+repository layers. It stands in for a hallucination, a stale document or a
+prompt injection. A natural task is the endpoint that
+[`backend/openapi.yaml`](./backend/openapi.yaml) declares but the code does not
+implement:
+
+> Implement `GET /transactions/{id}` as described in `backend/openapi.yaml`,
+> then run `just backend-architecture-test`.
+
+The agent follows the instruction, and the [architecture
+test](./backend/tests/test_architecture.py) fails: a controller may import from
+the `app` package only through a `use_cases` module. The message lists the
+offending import and says to route the symbol through `use_cases`. The agent
+moves the query into the [repository](./backend/app/transactions/repository.py),
+exposes it through a [use case](./backend/app/transactions/use_cases.py), and
+the test passes. Two more rules catch further improvisation: a repository is a
+module of plain functions declared `def name(*, db, ...)`, and route handlers
+may live only in `*controller*` files.
+
+### TypeScript: embedding custom ESLint rules
+
+[`frontend/CLAUDE.md`](./frontend/CLAUDE.md) is correct, so the misdirection has
+to come from the task.
+
+> Show the total of all transaction amounts at the bottom of the list.
+
+`just frontend-lint` fails on `local/no-amount-arithmetic`, a [custom
+rule](./frontend/eslint-rules/no-amount-arithmetic.js): `amount` is the API's
+decimal string and must never be coerced to a number or used in arithmetic.
+Money math belongs on the backend.
+
+> Fetch the transactions directly inside `TransactionsList` instead of through
+> the loader.
+
+`just frontend-lint` fails in
+[`TransactionsList`](./frontend/src/features/transactions/components/TransactionsList.tsx)
+on the [import and global boundaries](./frontend/eslint.config.js): only server
+functions import `{ api }`, and components never call `fetch`. The message
+points at the server function and `useLoaderData()` path.
+
+To stage a misleading instruction on the frontend too, edit one of the two
+boundary rules in [`frontend/CLAUDE.md`](./frontend/CLAUDE.md) where the comment
+invites you to.
+
+### Where the rules live
+
+- [`backend/tests/test_architecture.py`](./backend/tests/test_architecture.py):
+  `ast` checks over the backend source. Each failure states the rule, the
+  offenders and the fix, and hides the traceback so the agent sees only the
+  guidance.
+- [`frontend/eslint.config.js`](./frontend/eslint.config.js): the boundary rules
+  and their messages, plus the overrides that define the allowed data path.
+- [`frontend/eslint-rules/no-amount-arithmetic.js`](./frontend/eslint-rules/no-
+  amount-arithmetic.js): a custom rule with its own [RuleTester
+  spec](./frontend/eslint-rules/no-amount-arithmetic.test.ts) next to it.
+
+Every message follows the same shape, rule then offenders then fix, written for
+the agent as the reader. That is what turns a red check into a correction
+instead of a retry loop.
+
 ## CI
 
 The workflow in `.github/workflows/ci.yml` runs on pushes to `main` and on pull
