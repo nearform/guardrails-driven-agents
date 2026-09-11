@@ -209,11 +209,7 @@ def _decorator_root_name(decorator: ast.expr) -> str | None:
     return None
 
 
-@pytest.mark.parametrize(
-    "source",
-    [p for p in sorted(APP_DIR.rglob("*.py")) if p.name != "main.py"],
-    ids=rel,
-)
+@pytest.mark.parametrize("source", sorted(APP_DIR.rglob("*.py")), ids=rel)
 def test_route_handlers_only_in_controller_files(source: Path) -> None:
     __tracebackhide__ = True
     tree = parse(source)
@@ -233,8 +229,8 @@ def test_route_handlers_only_in_controller_files(source: Path) -> None:
             "Rule: functions decorated with a Litestar route decorator "
             "(@get/@post/@put/@patch/@delete/@route/...) may live only in a file "
             "named `controller.py`. This keeps the HTTP surface of every slice in "
-            "one predictable place; `main.py` only imports and registers handlers, "
-            "so it is exempt.\n"
+            "one predictable place. `main.py` only imports and registers handlers "
+            "defined there.\n"
             "\n"
             f"Handlers defined here: {handlers}\n"
             "\n"
