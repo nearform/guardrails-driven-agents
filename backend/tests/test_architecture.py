@@ -100,8 +100,7 @@ def test_controllers_import_app_code_only_from_use_cases(controller: Path) -> No
             + "\n\n"
             + "Fix: route the needed symbol through the slice's `use_cases` module "
             + "(e.g. re-export or define it there, then `from app.<slice> import "
-            + "use_cases` and reference `use_cases.<name>`). Imports from outside `app` "
-            + "(litestar, piccolo, stdlib) are unrestricted."
+            + "use_cases` and reference `use_cases.<name>`)."
         )
 
 
