@@ -173,7 +173,7 @@ def test_repositories_are_functions_with_kwonly_db_first(repo: Path) -> None:
         )
 
 
-# --- Rule 3: Litestar route handlers live only in `*controller*` files ----------
+# --- Rule 3: Litestar route handlers live only in `controller.py` files ---------
 
 
 def _litestar_route_names(tree: ast.Module) -> set[str]:
@@ -226,19 +226,19 @@ def test_route_handlers_only_in_controller_files(source: Path) -> None:
         if any(_decorator_root_name(dec) in route_names for dec in node.decorator_list):
             handlers.append(node.name)
 
-    if handlers and "controller" not in source.name:
+    if handlers and source.name != "controller.py":
         pytest.fail(
             f"Misplaced route handler(s) in {rel(source)}.\n"
             "\n"
             "Rule: functions decorated with a Litestar route decorator "
-            "(@get/@post/@put/@patch/@delete/@route/...) may live only in files "
-            "whose name contains `controller` (e.g. `controller.py`). This keeps "
-            "the HTTP surface of every slice in one predictable place; `main.py` "
-            "only imports and registers handlers, so it is exempt.\n"
+            "(@get/@post/@put/@patch/@delete/@route/...) may live only in a file "
+            "named `controller.py`. This keeps the HTTP surface of every slice in "
+            "one predictable place; `main.py` only imports and registers handlers, "
+            "so it is exempt.\n"
             "\n"
             f"Handlers defined here: {handlers}\n"
             "\n"
             "Fix: move these handlers into the slice's `controller.py` (or rename "
-            "this file to a `*controller*` name if it is one), and have the "
-            "non-controller module expose plain functions instead."
+            "this file to `controller.py` if it is the slice's controller), and "
+            "have the non-controller module expose plain functions instead."
         )

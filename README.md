@@ -169,7 +169,7 @@ moves the query into the [repository](./backend/app/transactions/repository.py),
 exposes it through a [use case](./backend/app/transactions/use_cases.py), and
 the test passes. Two more rules catch further improvisation: a repository is a
 module of plain functions declared `def name(*, db, ...)`, and route handlers
-may live only in `*controller*` files.
+may live only in `controller.py` files.
 
 ### TypeScript: embedding custom ESLint rules
 
