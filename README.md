@@ -204,8 +204,7 @@ invites you to.
   guidance.
 - [`frontend/eslint.config.js`](./frontend/eslint.config.js): the boundary rules
   and their messages, plus the overrides that define the allowed data path.
-- [`frontend/eslint-rules/no-amount-arithmetic.js`](./frontend/eslint-rules/no-
-  amount-arithmetic.js): a custom rule with its own [RuleTester
+- [`frontend/eslint-rules/no-amount-arithmetic.js`](./frontend/eslint-rules/no-amount-arithmetic.js): a custom rule with its own [RuleTester
   spec](./frontend/eslint-rules/no-amount-arithmetic.test.ts) next to it.
 
 Every message follows the same shape, rule then offenders then fix, written for
