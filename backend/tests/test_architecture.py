@@ -31,9 +31,9 @@ def parse(path: Path) -> ast.Module:
     return ast.parse(path.read_text(), filename=str(path))
 
 
-def files_named(name: str) -> list[Path]:
-    """All `app/` source files whose filename equals `name`."""
-    return sorted(APP_DIR.rglob(name))
+def files_named(pattern: str) -> list[Path]:
+    """All `app/` source files whose filename matches `pattern` (a glob)."""
+    return sorted(APP_DIR.rglob(pattern))
 
 
 def rel(path: Path) -> str:
@@ -209,7 +209,7 @@ def _decorator_root_name(decorator: ast.expr) -> str | None:
     return None
 
 
-@pytest.mark.parametrize("source", sorted(APP_DIR.rglob("*.py")), ids=rel)
+@pytest.mark.parametrize("source", files_named("*.py"), ids=rel)
 def test_route_handlers_only_in_controller_files(source: Path) -> None:
     __tracebackhide__ = True
     tree = parse(source)
