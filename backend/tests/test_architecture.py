@@ -91,16 +91,16 @@ def test_controllers_import_app_code_only_from_use_cases(controller: Path) -> No
             + "\n\n"
             + "Rule: a controller may import code from the `app` package only through "
             + "a `use_cases` module. Controllers wire HTTP to the slice's use cases; "
-            + "they must not reach past them into repositories, tables, db, or sibling "
-            + "slices."
+            + "they must not import repositories, tables, db, or sibling slices."
             + "\n\n"
             + "Offending imports:"
             + "\n"
             + "\n".join(f"  {v}" for v in violations)
             + "\n\n"
-            + "Fix: route the needed symbol through the slice's `use_cases` module "
-            + "(e.g. re-export or define it there, then `from app.<slice> import "
-            + "use_cases` and reference `use_cases.<name>`)."
+            + "Fix: move the work behind a function in the slice's `use_cases.py`, "
+            + "which performs data access through the slice's `repository.py`. Then "
+            + "in this controller import `from app.<slice> import use_cases` and call "
+            + "`use_cases.<name>(...)`."
         )
 
 
@@ -169,10 +169,7 @@ def test_repositories_are_functions_with_kwonly_db_first(repo: Path) -> None:
             + "\n"
             + "\n".join(f"  {v}" for v in violations)
             + "\n\n"
-            + "Fix: make the repository a module of plain functions (no classes) and "
-            + "give each one a leading keyword-only `db` parameter — declared "
-            + "`def name(*, db, ...)`. The per-definition notes above name the exact "
-            + "change for each offender."
+            + "Fix: apply the change named next to each definition above."
         )
 
 
@@ -236,7 +233,6 @@ def test_route_handlers_only_in_controller_files(source: Path) -> None:
             + "\n\n"
             + f"Handlers defined here: {handlers}"
             + "\n\n"
-            + "Fix: move these handlers into the slice's `controller.py` (or rename "
-            + "this file to `controller.py` if it is the slice's controller), and "
-            + "have the non-controller module expose plain functions instead."
+            + "Fix: move these handlers into the slice's `controller.py`. This module "
+            + "may keep plain, undecorated functions that the controller calls."
         )
