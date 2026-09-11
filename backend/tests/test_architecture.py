@@ -87,18 +87,21 @@ def test_controllers_import_app_code_only_from_use_cases(controller: Path) -> No
             violations.append(f"{rel(controller)}:{node.lineno} -> {ast.unparse(node)}")
     if violations:
         pytest.fail(
-            f"Slice boundary violated in {rel(controller)}.\n"
-            "\n"
-            "Rule: a controller may import code from the `app` package only through "
-            "a `use_cases` module. Controllers wire HTTP to the slice's use cases; "
-            "they must not reach past them into repositories, tables, db, or sibling "
-            "slices.\n"
-            "\n"
-            "Offending imports:\n" + "\n".join(f"  {v}" for v in violations) + "\n\n"
-            "Fix: route the needed symbol through the slice's `use_cases` module "
-            "(e.g. re-export or define it there, then `from app.<slice> import "
-            "use_cases` and reference `use_cases.<name>`). Imports from outside `app` "
-            "(litestar, piccolo, stdlib) are unrestricted."
+            f"Slice boundary violated in {rel(controller)}."
+            + "\n\n"
+            + "Rule: a controller may import code from the `app` package only through "
+            + "a `use_cases` module. Controllers wire HTTP to the slice's use cases; "
+            + "they must not reach past them into repositories, tables, db, or sibling "
+            + "slices."
+            + "\n\n"
+            + "Offending imports:"
+            + "\n"
+            + "\n".join(f"  {v}" for v in violations)
+            + "\n\n"
+            + "Fix: route the needed symbol through the slice's `use_cases` module "
+            + "(e.g. re-export or define it there, then `from app.<slice> import "
+            + "use_cases` and reference `use_cases.<name>`). Imports from outside `app` "
+            + "(litestar, piccolo, stdlib) are unrestricted."
         )
 
 
@@ -116,20 +119,20 @@ def _signature_violation(node: ast.FunctionDef | ast.AsyncFunctionDef) -> str | 
         positional = [a.arg for a in args.posonlyargs + args.args]
         return (
             f"`{node.name}` declares positional parameters {positional}; every "
-            f"parameter must be keyword-only. Add a leading `*` so the signature "
-            f"reads `def {node.name}(*, db, ...)`."
+            + "parameter must be keyword-only. Add a leading `*` so the signature "
+            + f"reads `def {node.name}(*, db, ...)`."
         )
     kwonly = [a.arg for a in args.kwonlyargs]
     if not kwonly:
         return (
             f"`{node.name}` takes no parameters; a repository function must take "
-            f"the engine as its first keyword-only parameter: "
-            f"`def {node.name}(*, db, ...)`."
+            + "the engine as its first keyword-only parameter: "
+            + f"`def {node.name}(*, db, ...)`."
         )
     if kwonly[0] != "db":
         return (
             f"`{node.name}` first keyword-only parameter is {kwonly[0]!r}; it must "
-            f"be `db` (the engine). Reorder to `def {node.name}(*, db, ...)`."
+            + f"be `db` (the engine). Reorder to `def {node.name}(*, db, ...)`."
         )
     return None
 
@@ -144,7 +147,7 @@ def test_repositories_are_functions_with_kwonly_db_first(repo: Path) -> None:
         if isinstance(node, ast.ClassDef):
             violations.append(
                 f"{rel(repo)}:{node.lineno} -> `class {node.name}` is not allowed; "
-                "a repository is a module of plain functions, not a class."
+                + "a repository is a module of plain functions, not a class."
             )
 
     for node in tree.body:
@@ -155,21 +158,22 @@ def test_repositories_are_functions_with_kwonly_db_first(repo: Path) -> None:
 
     if violations:
         pytest.fail(
-            f"Repository shape violated in {rel(repo)}.\n"
-            "\n"
-            "Rule: a repository is a module of plain functions (no classes), and "
-            "every function takes the engine as a keyword-only first parameter — "
-            "declared `def name(*, db, ...)`. Keeping `db` keyword-only forces call "
-            "sites to name it (`repository.name(db=db, ...)`), so the dependency is "
-            "explicit and never passed positionally by accident.\n"
-            "\n"
-            "Offending definitions:\n"
+            f"Repository shape violated in {rel(repo)}."
+            + "\n\n"
+            + "Rule: a repository is a module of plain functions (no classes), and "
+            + "every function takes the engine as a keyword-only first parameter — "
+            + "declared `def name(*, db, ...)`. Keeping `db` keyword-only forces call "
+            + "sites to name it (`repository.name(db=db, ...)`), so the dependency is "
+            + "explicit and never passed positionally by accident."
+            + "\n\n"
+            + "Offending definitions:"
+            + "\n"
             + "\n".join(f"  {v}" for v in violations)
             + "\n\n"
-            "Fix: make the repository a module of plain functions (no classes) and "
-            "give each one a leading keyword-only `db` parameter — declared "
-            "`def name(*, db, ...)`. The per-definition notes above name the exact "
-            "change for each offender."
+            + "Fix: make the repository a module of plain functions (no classes) and "
+            + "give each one a leading keyword-only `db` parameter — declared "
+            + "`def name(*, db, ...)`. The per-definition notes above name the exact "
+            + "change for each offender."
         )
 
 
@@ -224,16 +228,16 @@ def test_route_handlers_only_in_controller_files(source: Path) -> None:
 
     if handlers and source.name != "controller.py":
         pytest.fail(
-            f"Misplaced route handler(s) in {rel(source)}.\n"
-            "\n"
-            "Rule: functions decorated with a Litestar route decorator "
-            "(@get/@post/@put/@patch/@delete/@route/...) may live only in a file "
-            "named `controller.py`. This keeps the HTTP surface of every slice in "
-            "one predictable place.\n"
-            "\n"
-            f"Handlers defined here: {handlers}\n"
-            "\n"
-            "Fix: move these handlers into the slice's `controller.py` (or rename "
-            "this file to `controller.py` if it is the slice's controller), and "
-            "have the non-controller module expose plain functions instead."
+            f"Misplaced route handler(s) in {rel(source)}."
+            + "\n\n"
+            + "Rule: functions decorated with a Litestar route decorator "
+            + "(@get/@post/@put/@patch/@delete/@route/...) may live only in a file "
+            + "named `controller.py`. This keeps the HTTP surface of every slice in "
+            + "one predictable place."
+            + "\n\n"
+            + f"Handlers defined here: {handlers}"
+            + "\n\n"
+            + "Fix: move these handlers into the slice's `controller.py` (or rename "
+            + "this file to `controller.py` if it is the slice's controller), and "
+            + "have the non-controller module expose plain functions instead."
         )
