@@ -8,7 +8,11 @@ from app.db.engine import apply_migrations, database_connection_pool, provide_db
 from app.db.seed import seed
 from app.health.controller import health_check
 from app.schema.controller import openapi_json, openapi_yaml
-from app.transactions.controller import create_transaction, list_transactions
+from app.transactions.controller import (
+    create_transaction,
+    get_transaction,
+    list_transactions,
+)
 
 
 @asynccontextmanager
@@ -41,6 +45,7 @@ def create_app(auto_setup: bool = False) -> Litestar:
             health_check,
             create_transaction,
             list_transactions,
+            get_transaction,
             openapi_yaml,
             openapi_json,
         ],
