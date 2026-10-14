@@ -43,6 +43,28 @@ def test_list_transactions_returns_created_row(
     assert row == payload
 
 
+def test_get_transaction_returns_created_row(client: TestClient, payload: dict) -> None:
+    created = client.post("/transactions", json=payload).json()
+
+    response = client.get(f"/transactions/{created['id']}")
+
+    assert response.status_code == 200
+    assert response.json() == created
+
+
+def test_get_transaction_returns_404_for_unknown_id(client: TestClient) -> None:
+    response = client.get("/transactions/00000000-0000-0000-0000-000000000000")
+
+    assert response.status_code == 404
+    assert response.json() == {"status_code": 404, "detail": "Not Found"}
+
+
+def test_get_transaction_rejects_malformed_id(client: TestClient) -> None:
+    response = client.get("/transactions/not-a-uuid")
+
+    assert response.status_code == 404
+
+
 def test_create_transaction_without_description(
     client: TestClient, payload: dict
 ) -> None:
