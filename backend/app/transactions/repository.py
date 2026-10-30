@@ -1,4 +1,5 @@
 from decimal import Decimal
+from uuid import UUID
 
 from piccolo.engine.base import Engine
 
@@ -31,3 +32,9 @@ async def select_all(*, db: Engine) -> list[TransactionRead]:
     async with db.transaction():
         rows = await Transaction.select()
     return [TransactionRead.model_validate(row) for row in rows]
+
+
+async def select_by_id(*, db: Engine, id: UUID) -> TransactionRead | None:
+    async with db.transaction():
+        row = await Transaction.select().where(Transaction.id == id).first()
+    return TransactionRead.model_validate(row) if row else None

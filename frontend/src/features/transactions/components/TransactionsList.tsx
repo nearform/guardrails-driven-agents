@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import type { Transaction } from "../types.ts";
 import {
   Table,
@@ -49,7 +50,14 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
         {transactions.map((transaction) => (
           <TableRow key={transaction.id} data-testid="transaction-row">
             <TableCell data-testid="transaction-sender" className="font-medium">
-              {transaction.sender}
+              <Link
+                to="/$transactionId"
+                params={{ transactionId: transaction.id }}
+                data-testid="transaction-detail-link"
+                className="hover:underline"
+              >
+                {transaction.sender}
+              </Link>
             </TableCell>
             <TableCell
               data-testid="transaction-beneficiary"

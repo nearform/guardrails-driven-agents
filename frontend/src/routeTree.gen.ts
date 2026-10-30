@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LedgerRouteImport } from './routes/_ledger'
 import { Route as LedgerIndexRouteImport } from './routes/_ledger/index'
+import { Route as LedgerTransactionIdRouteImport } from './routes/_ledger/$transactionId'
 
 const LedgerRoute = LedgerRouteImport.update({
   id: '/_ledger',
@@ -21,24 +22,32 @@ const LedgerIndexRoute = LedgerIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LedgerRoute,
 } as any)
+const LedgerTransactionIdRoute = LedgerTransactionIdRouteImport.update({
+  id: '/$transactionId',
+  path: '/$transactionId',
+  getParentRoute: () => LedgerRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LedgerIndexRoute
+  '/$transactionId': typeof LedgerTransactionIdRoute
 }
 export interface FileRoutesByTo {
+  '/$transactionId': typeof LedgerTransactionIdRoute
   '/': typeof LedgerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_ledger': typeof LedgerRouteWithChildren
+  '/_ledger/$transactionId': typeof LedgerTransactionIdRoute
   '/_ledger/': typeof LedgerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/$transactionId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/_ledger' | '/_ledger/'
+  to: '/$transactionId' | '/'
+  id: '__root__' | '/_ledger' | '/_ledger/$transactionId' | '/_ledger/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -61,14 +70,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LedgerIndexRouteImport
       parentRoute: typeof LedgerRoute
     }
+    '/_ledger/$transactionId': {
+      id: '/_ledger/$transactionId'
+      path: '/$transactionId'
+      fullPath: '/$transactionId'
+      preLoaderRoute: typeof LedgerTransactionIdRouteImport
+      parentRoute: typeof LedgerRoute
+    }
   }
 }
 
 interface LedgerRouteChildren {
+  LedgerTransactionIdRoute: typeof LedgerTransactionIdRoute
   LedgerIndexRoute: typeof LedgerIndexRoute
 }
 
 const LedgerRouteChildren: LedgerRouteChildren = {
+  LedgerTransactionIdRoute: LedgerTransactionIdRoute,
   LedgerIndexRoute: LedgerIndexRoute,
 }
 
