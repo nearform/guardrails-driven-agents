@@ -152,3 +152,18 @@ def test_rejected_transaction_is_not_persisted(
     response = client.get("/transactions")
     assert response.status_code == 200
     assert response.json() == []
+
+
+def test_get_transaction(client: TestClient, payload: dict) -> None:
+    created = client.post("/transactions", json=payload).json()
+    response = client.get(f"/transactions/{created['id']}")
+
+    assert response.status_code == 200
+    assert response.json() == created
+
+
+def test_get_transaction_not_found(client: TestClient) -> None:
+    response = client.get("/transactions/00000000-0000-0000-0000-000000000000")
+
+    assert response.status_code == 404
+    assert response.json()["status_code"] == 404

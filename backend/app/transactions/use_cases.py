@@ -1,3 +1,6 @@
+from uuid import UUID
+
+from litestar.exceptions import NotFoundException
 from piccolo.engine.base import Engine
 
 from app.transactions import repository
@@ -19,3 +22,10 @@ async def create_transaction(db: Engine, data: TransactionCreate) -> Transaction
 
 async def list_transactions(db: Engine) -> list[TransactionRead]:
     return await repository.select_all(db=db)
+
+
+async def get_transaction(db: Engine, id: UUID) -> TransactionRead:
+    transaction = await repository.select_by_id(db=db, id=id)
+    if transaction is None:
+        raise NotFoundException()
+    return transaction

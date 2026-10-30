@@ -1,5 +1,8 @@
+from uuid import UUID
+
 from litestar import get, post
 from litestar.di import NamedDependency
+from litestar.params import FromPath
 from litestar.status_codes import HTTP_201_CREATED
 from piccolo.engine.base import Engine
 
@@ -18,3 +21,8 @@ async def create_transaction(
 @get("/transactions")
 async def list_transactions(db: Db) -> list[use_cases.TransactionRead]:
     return await use_cases.list_transactions(db)
+
+
+@get("/transactions/{id:uuid}")
+async def get_transaction(id: FromPath[UUID], db: Db) -> use_cases.TransactionRead:
+    return await use_cases.get_transaction(db, id)
