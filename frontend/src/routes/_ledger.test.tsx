@@ -1,10 +1,34 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import {
+  RouterProvider,
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+} from "@tanstack/react-router";
 import { TransactionsList } from "../features/transactions/components/TransactionsList";
 import type { Transaction } from "../features/transactions/types.ts";
 
-function renderList(transactions: Transaction[]) {
-  return render(<TransactionsList transactions={transactions} />);
+// The list links rows to the detail route, so it needs a router in context.
+async function renderList(transactions: Transaction[]) {
+  const rootRoute = createRootRoute({
+    component: () => <TransactionsList transactions={transactions} />,
+  });
+  const indexRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/",
+  });
+  const detailRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/$transactionId",
+  });
+  const router = createRouter({
+    routeTree: rootRoute.addChildren([indexRoute, detailRoute]),
+    history: createMemoryHistory({ initialEntries: ["/"] }),
+  });
+  render(<RouterProvider router={router} />);
+  await router.latestLoadPromise;
 }
 
 // Stub the single `api` singleton — this is the only network seam the loader
@@ -67,9 +91,9 @@ describe("transactions loader + list", () => {
     });
 
     const { transactions } = await transactionsLoader();
-    renderList(transactions);
+    await renderList(transactions);
 
-    expect(screen.getByTestId("transactions-list")).toBeInTheDocument();
+    expect(await screen.findByTestId("transactions-list")).toBeInTheDocument();
     expect(screen.getAllByTestId("transaction-row")).toHaveLength(1);
     expect(screen.getByTestId("transaction-amount")).toHaveTextContent(
       "42.50 EUR",
@@ -86,9 +110,11 @@ describe("transactions loader + list", () => {
     });
 
     const { transactions } = await transactionsLoader();
-    renderList(transactions);
+    await renderList(transactions);
 
-    expect(screen.getByTestId("transactions-empty-state")).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("transactions-empty-state"),
+    ).toBeInTheDocument();
     expect(screen.queryByTestId("transactions-list")).not.toBeInTheDocument();
   });
 });
